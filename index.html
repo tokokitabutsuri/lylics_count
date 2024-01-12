@@ -7,10 +7,37 @@
 <body>
     <h1>歌詞解析ツール</h1>
     <textarea id="lylics" placeholder="ここに歌詞を入力" style="width: 80vw;height: 50vh;"></textarea><br>
-    <label>取得する数</label><input id="num" type="number" value="10" style="margin-right: 30px;width: 100px;">
-    <button id="count">計測</button>
-    <!--<input type="text" id="reptext" style="margin-right: 50px;">
-    <button id="rep">置換</button>-->
+    <label>取得する数</label><input id="num" type="number" value="10" style="margin-right: 10px;width: 100px;">
+    <button id="count">計測</button><br>
+    <a style="user-select: none;"
+        onclick="let s = document.getElementById('settings');if(s.style.display=='none'){s.style.display='block'}else{s.style.display='none'}">詳細設定▼</a>
+    <div id="settings" style="display: none;">
+        <input type="text" id="reptext" style="margin-right: 10px;" placeholder="削除したい文字を入力">
+        <button id="rep">削除</button><br>
+        <span>結果に含めない項目にチェック</span>
+        <label><input type="checkbox" class="chk1" value="名詞" />名詞</label>
+        <label><input type="checkbox" class="chk1" value="助詞" />助詞</label>
+        <label><input type="checkbox" class="chk1" value="記号" checked />記号</label>
+        <label><input type="checkbox" class="chk1" value="接続詞" />接続詞</label>
+        <label><input type="checkbox" class="chk1" value="動詞" />動詞</label>
+        <label><input type="checkbox" class="chk1" value="副詞" />副詞</label>
+        <label><input type="checkbox" class="chk1" value="助動詞" />助動詞</label>
+        <label><input type="checkbox" class="chk1" value="形容詞" />形容詞</label>
+        <label><input type="checkbox" class="chk1" value="接頭詞" />接頭詞</label>
+        <label><input type="checkbox" class="chk1" value="感動詞" />感動詞</label>
+        <label><input type="checkbox" class="chk1" value="連体詞" />連体詞</label>
+        <style>
+            #settings{
+                user-select: none;
+                background-color: lightblue;
+            }
+            a:has(+#settings){
+                display: block;
+                width:100%;
+                background-color: lightblue;
+            }
+        </style>
+    </div>
     <hr>
     <div id="ans"></div>
 
@@ -48,7 +75,14 @@
             let count = []
             let countedword = []
             let inputlylics = document.getElementById('lylics').value;
-            let zyogai_pos = /記号/     //  /名詞|助詞|記号|接続詞|動詞|副詞|助動詞|形容詞|接頭詞|感動詞|連体詞/
+
+            let zyogai_pos = []     //  ['名詞', '助詞', '記号', '接続詞', '動詞', '副詞', '助動詞', '形容詞', '接頭詞', '感動詞', '連体詞']
+            const chk1 = document.getElementsByClassName('chk1');
+            for (let i = 0; i < chk1.length; i++) {
+                if (chk1[i].checked) {//(chk1[i].checked === true)と同じ
+                    zyogai_pos.push(chk1[i].value);
+                }
+            }
 
             var newsegs = [];
 
@@ -63,7 +97,7 @@
                     const tokens = tokenizer.tokenize(inputlylics);// 解析データの取得
                     let newtokens = []
                     for (const token of tokens) {
-                        if (!zyogai_pos.test(token.pos)) {
+                        if (!zyogai_pos.includes(token.pos)) {
                             newtokens.push(token)
                         }
                     }
@@ -90,7 +124,7 @@
 
                     const aryMax = function (a, b) { return Math.max(a, b); }
                     let ans = ""
-                    while ((ans.match(/\n/g) || []).length < document.getElementById('num').value&&count.length>0) {
+                    while ((ans.match(/\n/g) || []).length < document.getElementById('num').value && count.length > 0) {
                         let max = count.reduce(aryMax);
                         let j = 0;
                         for (const reg of countedword) {
