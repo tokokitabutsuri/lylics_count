@@ -13,10 +13,38 @@
     <button id="rep">置換</button>-->
     <hr>
     <div id="ans"></div>
+
     <script src="kuromoji/kuromoji.js"></script>
     <script>
+        var locking = false;
+        const screen_lock = () => {
+            if (locking) return;
+            locking = true;
+            let lock_screen = document.createElement('div');
+            lock_screen.id = "screenLock";
 
-        document.getElementById('count').addEventListener('click', async () => {
+            lock_screen.style.height = '100%';
+            lock_screen.style.left = '0px';
+            lock_screen.style.position = 'fixed';
+            lock_screen.style.top = '0px';
+            lock_screen.style.width = '100%';
+            lock_screen.style.zIndex = '9999';
+            //lock_screen.style.opacity = '0';
+            lock_screen.style.backgroundColor = '#0008';
+
+            let objBody = document.getElementsByTagName("body").item(0);
+            objBody.appendChild(lock_screen);
+        }
+        const screen_unlock = () => {
+            if (!locking) return;
+            locking = false;
+            let screenLock = document.getElementById("screenLock");
+            screenLock.parentNode.removeChild(screenLock);
+        }
+        document.getElementById('count').addEventListener('click', () => {
+
+            if (locking) return;
+            screen_lock();
             let count = []
             let countedword = []
             let inputlylics = document.getElementById('lylics').value;
@@ -24,55 +52,74 @@
 
             var newsegs = [];
 
-            await kuromoji.builder({ dicPath: './kuromoji/dict/' }).build((err, tokenizer) => {
-                const tokens = tokenizer.tokenize(inputlylics);// 解析データの取得
-                let newtokens = []
-                for (const token of tokens) {
-                    if (!zyogai_pos.test(token.pos)) {
-                        newtokens.push(token)
-                    }
-                }
-                console.log(newtokens)
-                newsegs = newtokens.map((obj) => obj.surface_form)
-                console.log(newsegs)
-                //ここで解析完了
+            if (!inputlylics) {
+                document.getElementById('ans').innerText = '歌詞が空です';
+                screen_unlock();
+                return;
+            }
 
-                for (const seg of newsegs) {    //数を数える
-                    let a = countedword.indexOf(seg);
-                    if (a == -1) {
-                        countedword.push(seg);
-                        count.push(1);
-                    } else {
-                        count[a] += 1;
-                    }
-                }
-
-                const aryMax = function (a, b) { return Math.max(a, b); }
-                let ans = ""
-                while ((ans.match(/\n/g) || []).length < document.getElementById('num').value) {
-                    let max = count.reduce(aryMax);
-                    let j = 0;
-                    for (const reg of countedword) {
-                        if (count[j] == max) {
-                            ans = ans + reg + ':' + count[j] + '個' + '\n';
-                            countedword.splice(j, 1);
-                            count.splice(j, 1)
+            kuromoji.builder({ dicPath: './kuromoji/dict/' }).build((err, tokenizer) => {
+                try {
+                    const tokens = tokenizer.tokenize(inputlylics);// 解析データの取得
+                    let newtokens = []
+                    for (const token of tokens) {
+                        if (!zyogai_pos.test(token.pos)) {
+                            newtokens.push(token)
                         }
-                        j++;
                     }
-                    console.log(count)
-                    console.log(countedword)
+                    console.log(tokens)
+                    newsegs = newtokens.map((obj) => obj.surface_form)
                     console.log(newsegs)
-                    console.log(ans)
+                    //ここで解析完了
+
+                    if (newsegs.length < 2) {
+                        document.getElementById('ans').innerText = '短すぎます';
+                        screen_unlock();
+                        return;
+                    }
+
+                    for (const seg of newsegs) {    //数を数える
+                        let a = countedword.indexOf(seg);
+                        if (a == -1) {
+                            countedword.push(seg);
+                            count.push(1);
+                        } else {
+                            count[a] += 1;
+                        }
+                    }
+
+                    const aryMax = function (a, b) { return Math.max(a, b); }
+                    let ans = ""
+                    while ((ans.match(/\n/g) || []).length < document.getElementById('num').value&&count.length>0) {
+                        let max = count.reduce(aryMax);
+                        let j = 0;
+                        for (const reg of countedword) {
+                            if (count[j] == max) {
+                                ans = ans + reg + ':' + count[j] + '個' + '\n';
+                                countedword.splice(j, 1);
+                                count.splice(j, 1)
+                            }
+                            j++;
+                        }
+                    }
+                    document.getElementById('ans').innerText = ans;
+                    screen_unlock();
+                } catch (e) {
+                    screen_unlock();
+                    console.log(e);
+                    document.getElementById('ans').innerText = e.toString();
+                    //throw e;
+                } finally {
+                    screen_unlock();
                 }
-                document.getElementById('ans').innerText = ans;
             });
+
         })
 
-        document.getElementById('rep').addEventListener('click', () => {
+        /*document.getElementById('rep').addEventListener('click', () => {
             const inp = document.getElementById('lylics');
             inp.value = inp.value.replaceAll(document.getElementById('reptext').value, '。');
-        })
+        })*/
 
         //alert(segs.join(" | "));  // 表示
     </script>
