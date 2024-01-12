@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<head>
+    <meta name="robots" content="noindex,nofollow">
+</head>
+
+<body>
+    <div>ここに歌詞を入力</div>
+    <textarea id="lylics" style="width: 80vw;height: 50vh;"></textarea><br>
+    <!--<input id="num" type="number" value="10" style="margin-right: 30px;width: 100px;">--><button
+        id="count">計測</button>
+        <input type="text" id="reptext" style="margin-right: 50px;">
+        <button id="rep">置換</button>
+        <hr>
+<div id="ans"></div>
+    <script type="text/javascript" charset="UTF-8"
+        src="http://chasen.org/~taku/software/TinySegmenter/tiny_segmenter-0.2.js"></script>
+    <script>
+        var segmenter = new TinySegmenter();                 // インスタンス生成
+
+        document.getElementById('count').addEventListener('click', () => {
+            let count = []
+            let countedword = []
+            var inputlylics = document.getElementById('lylics').value;
+            var segs = segmenter.segment(inputlylics);  // 単語の配列が返る
+            let newsegs = [];
+            var zyogai = /。|て|だ|た|が|の|を|に|の|に|と|や|は|も|こそ|でも|ばかり|まで|だけ|ほど|ば|と|ても|でも|けれど|けれども|か|な|とも|の|さ|や|よ|を|の|から|ぞ|ほど/
+            for (const seg of segs) {
+                if (!(/\s+/.test(seg) || zyogai.test(seg))) {
+                    newsegs.push(seg);
+                }
+            }
+            for (const seg of newsegs) {
+                let a = countedword.indexOf(seg);
+                if (a == -1) {
+                    countedword.push(seg);
+                    count.push(1);
+                } else {
+                    count[a] += 1;
+                }
+            }
+            const aryMax = function (a, b) {return Math.max(a, b);}
+            let max = count.reduce(aryMax);
+            let i = 0;
+            let ans = ""
+            for(const reg of countedword){
+                if(count[i]==max){
+                    ans=ans+reg+'\n';
+                }
+                i++;
+            }
+            console.log(count)
+            console.log(countedword)
+            console.log(newsegs)
+            console.log(ans)
+            document.getElementById('ans').innerText=ans;
+        })
+
+        document.getElementById('rep').addEventListener('click',()=>{
+            const inp = document.getElementById('lylics');
+            inp.value = inp.value.replaceAll(document.getElementById('reptext').value,'。');
+        })
+        
+        //alert(segs.join(" | "));  // 表示
+    </script>
+</body>
