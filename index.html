@@ -5,59 +5,68 @@
 </head>
 
 <body>
-    <div>ここに歌詞を入力</div>
-    <textarea id="lylics" style="width: 80vw;height: 50vh;"></textarea><br>
-    <!--<input id="num" type="number" value="10" style="margin-right: 30px;width: 100px;">--><button
-        id="count">計測</button>
-    <input type="text" id="reptext" style="margin-right: 50px;">
-    <button id="rep">置換</button>
+    <h1>歌詞解析ツール</h1>
+    <textarea id="lylics" placeholder="ここに歌詞を入力" style="width: 80vw;height: 50vh;"></textarea><br>
+    <label>取得する数</label><input id="num" type="number" value="10" style="margin-right: 30px;width: 100px;">
+    <button id="count">計測</button>
+    <!--<input type="text" id="reptext" style="margin-right: 50px;">
+    <button id="rep">置換</button>-->
     <hr>
     <div id="ans"></div>
     <script src="kuromoji/kuromoji.js"></script>
-    <script>               // インスタンス生成
+    <script>
 
-        document.getElementById('count').addEventListener('click', () => {
+        document.getElementById('count').addEventListener('click', async () => {
             let count = []
             let countedword = []
-            var inputlylics = document.getElementById('lylics').value;
-            let newsegs = [];
-            //var zyogai = /。|て|だ|た|が|の|を|に|の|に|と|や|は|も|こそ|でも|ばかり|まで|だけ|ほど|ば|と|ても|でも|けれど|けれども|か|な|とも|の|さ|や|よ|を|の|から|ぞ|ほど/
+            let inputlylics = document.getElementById('lylics').value;
+            let zyogai_pos = /記号/     //  /名詞|助詞|記号|接続詞|動詞|副詞|助動詞|形容詞|接頭詞|感動詞|連体詞/
 
-            kuromoji.builder({ dicPath: './kuromoji/dict/' }).build((err, tokenizer) => {
+            var newsegs = [];
+
+            await kuromoji.builder({ dicPath: './kuromoji/dict/' }).build((err, tokenizer) => {
                 const tokens = tokenizer.tokenize(inputlylics);// 解析データの取得
-                newtokens = Array.from(new Set(tokens.map((obj) => obj.pos)))
-                console.log(tokens)
+                let newtokens = []
+                for (const token of tokens) {
+                    if (!zyogai_pos.test(token.pos)) {
+                        newtokens.push(token)
+                    }
+                }
+                console.log(newtokens)
+                newsegs = newtokens.map((obj) => obj.surface_form)
+                console.log(newsegs)
+                //ここで解析完了
+
+                for (const seg of newsegs) {    //数を数える
+                    let a = countedword.indexOf(seg);
+                    if (a == -1) {
+                        countedword.push(seg);
+                        count.push(1);
+                    } else {
+                        count[a] += 1;
+                    }
+                }
+
+                const aryMax = function (a, b) { return Math.max(a, b); }
+                let ans = ""
+                while ((ans.match(/\n/g) || []).length < document.getElementById('num').value) {
+                    let max = count.reduce(aryMax);
+                    let j = 0;
+                    for (const reg of countedword) {
+                        if (count[j] == max) {
+                            ans = ans + reg + ':' + count[j] + '個' + '\n';
+                            countedword.splice(j, 1);
+                            count.splice(j, 1)
+                        }
+                        j++;
+                    }
+                    console.log(count)
+                    console.log(countedword)
+                    console.log(newsegs)
+                    console.log(ans)
+                }
+                document.getElementById('ans').innerText = ans;
             });
-/*
-            for (const seg of segs) {
-                if (!(/\s+/.test(seg) || zyogai.test(seg))) {
-                    newsegs.push(seg);
-                }
-            }
-            for (const seg of newsegs) {
-                let a = countedword.indexOf(seg);
-                if (a == -1) {
-                    countedword.push(seg);
-                    count.push(1);
-                } else {
-                    count[a] += 1;
-                }
-            }
-            const aryMax = function (a, b) { return Math.max(a, b); }
-            let max = count.reduce(aryMax);
-            let i = 0;
-            let ans = ""
-            for (const reg of countedword) {
-                if (count[i] == max) {
-                    ans = ans + reg + '\n';
-                }
-                i++;
-            }
-            console.log(count)
-            console.log(countedword)
-            console.log(newsegs)
-            console.log(ans)
-            document.getElementById('ans').innerText = ans;*/
         })
 
         document.getElementById('rep').addEventListener('click', () => {
