@@ -26,6 +26,17 @@
         <label><input type="checkbox" class="chk1" value="接頭詞" />接頭詞</label>
         <label><input type="checkbox" class="chk1" value="感動詞" />感動詞</label>
         <label><input type="checkbox" class="chk1" value="連体詞" />連体詞</label>
+        <script type="text/javascript">
+            let zyogai_pos=localStorage.getItem('pos_settings')||(localStorage.pos_settings=[記号]);
+
+            const chk1 = document.getElementsByClassName('chk1');
+            for (let i = 0; i < chk1.length; i++) {
+                if (zyogai_pos.includes(chk1[i].value)) {//(chk1[i].checked === true)と同じ
+                    chk1[i].checked=true;
+                }
+            }
+        </script>
+
         <style>
             #settings{
                 user-select: none;
@@ -83,6 +94,7 @@
                     zyogai_pos.push(chk1[i].value);
                 }
             }
+            localStorage.pos_settings=zyogai_pos;
 
             var newsegs = [];
 
