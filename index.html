@@ -1,18 +1,49 @@
 <!DOCTYPE html>
+<html lang="ja">
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歌詞解析ツールv2</title>
     <meta name="robots" content="noindex,nofollow">
+    <style>
+        #lylics {
+            width: 80vw;
+            height: 50vh;
+        }
+
+        #num {
+            margin-right: 10px;
+            width: 100px;
+        }
+
+        #settingslink {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #settings {
+            display: none;
+        }
+
+        #reptext {
+            margin-right: 10px;
+        }
+        #ans{
+            min-height:30px;
+        }
+    </style>
 </head>
 
 <body>
     <h1>歌詞解析ツールv2</h1>
-    <textarea id="lylics" placeholder="ここに歌詞を入力" style="width: 80vw;height: 50vh;"></textarea><br>
-    <label>取得する数</label><input id="num" type="number" value="10" style="margin-right: 10px;width: 100px;">
-    <button id="count">計測</button><br>
-    <a style="user-select: none;"
+    <textarea id="lylics" placeholder="ここに歌詞を入力"></textarea><br>
+    <label>取得する数</label><input id="num" type="number" value="10" placeholder="数値">
+    <button type="button" id="count">計測</button><br>
+    <a id="settingslink"
         onclick="let s = document.getElementById('settings');if(s.style.display=='none'){s.style.display='block'}else{s.style.display='none'}">詳細設定▼</a>
-    <div id="settings" style="display: none;">
-        <input type="text" id="reptext" style="margin-right: 10px;" placeholder="削除したい文字を入力">
+    <div id="settings">
+        <input type="text" id="reptext" placeholder="削除したい文字を入力">
         <button id="rep">削除</button><br>
         <span>結果に含めない項目にチェック</span>
         <label><input type="checkbox" class="chk1" value="名詞" />名詞</label>
@@ -27,35 +58,37 @@
         <label><input type="checkbox" class="chk1" value="感動詞" />感動詞</label>
         <label><input type="checkbox" class="chk1" value="連体詞" />連体詞</label>
         <script type="text/javascript">
-            let zyogai_pos=localStorage.getItem('pos_settings')||(localStorage.pos_settings=[記号]);
+            let zyogai_pos = localStorage.getItem('pos_settings') || (localStorage.pos_settings = [記号]);
 
             const chk1 = document.getElementsByClassName('chk1');
             for (let i = 0; i < chk1.length; i++) {
                 if (zyogai_pos.includes(chk1[i].value)) {//(chk1[i].checked === true)と同じ
-                    chk1[i].checked=true;
+                    chk1[i].checked = true;
                 }
             }
         </script>
 
         <style>
-            #settings{
+            #settings {
+                -webkit-user-select: none;
                 user-select: none;
                 background-color: lightblue;
             }
-            a:has(+#settings){
+
+            a:has(+#settings) {
                 display: block;
-                width:100%;
+                width: 100%;
                 background-color: lightblue;
             }
         </style>
     </div>
     <hr>
     <h3>結果</h3>
-    <div id="ans" style="min-height:30px;"></div>
-<hr />
+    <div id="ans"></div>
+    <hr />
     <div>
         <div><a href="https://github.com/tokokitabutsuri/lylics_count">ソースコードはこちら</a></div>
-　　　　　<div>このツールは<a href="https://github.com/takuyaa/kuromoji.js/tree/master">kuromoji.js</a>を利用しています</div>
+        <div>このツールは<a href="https://github.com/takuyaa/kuromoji.js/tree/master">kuromoji.js</a>を利用しています</div>
 
     </div>
     <script src="kuromoji/kuromoji.js"></script>
@@ -100,7 +133,7 @@
                     zyogai_pos.push(chk1[i].value);
                 }
             }
-            localStorage.pos_settings=zyogai_pos;
+            localStorage.pos_settings = zyogai_pos;
 
             var newsegs = [];
 
@@ -142,7 +175,8 @@
 
                     const aryMax = function (a, b) { return Math.max(a, b); }
                     let ans = ""
-                    while ((ans.match(/\n/g) || []).length < document.getElementById('num').value && count.length > 0) {
+                    let getnum = document.getElementById('num').value;
+                    while ((ans.match(/\n/g) || []).length < getnum && count.length > 0) {
                         let max = count.reduce(aryMax);
                         let j = 0;
                         for (const reg of countedword) {
@@ -168,11 +202,13 @@
 
         })
 
-        /*document.getElementById('rep').addEventListener('click', () => {
+        document.getElementById('rep').addEventListener('click', () => {
             const inp = document.getElementById('lylics');
             inp.value = inp.value.replaceAll(document.getElementById('reptext').value, '。');
-        })*/
+        })
 
         //alert(segs.join(" | "));  // 表示
     </script>
 </body>
+
+</html>
